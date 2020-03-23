@@ -1,0 +1,50 @@
+import os
+import torch
+from torch.utils.data import Dataset
+from torchvision.transforms import transforms
+import numpy as np
+import collections
+from PIL import Image
+import csv
+import random
+
+class miniimagenet(Dataset):
+"""
+set episode
+"""
+
+  def __init__(self, root, mode, batchsz, n_way, k_shot, k_query, resize, startidx=0):
+  
+    self.batchsz = batchsz
+    self.n_way = n_way
+    self.k_shot = k_shot
+    self.k_query = k_query
+    self.setsz = self.n_way * self.k_shot
+    self.querysz = self.n_way * self.k_query
+    self.resize = resize
+    self.startidx = startidx
+    print('mode:%s, batchsize:%d, %d-way, %d-shot, %d-query, resize:%d'%(
+    mode, batchsz, n_way, k_shot, k_query, resize))
+    
+    if mode == 'train':
+      self.transform = transform.Compose([lamda x: Image.open(x).convert('RGB'),
+                                          transforms.Resize((self.resize, self.resize)),
+                                          transforms.ToTensor(),
+                                          transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+                                          ])
+    else:
+      self.transform = transform.Compose([lamda x: Image.open(x).convert('RGB'),
+                                          transforms.Resize((self.resize, self.resize)),
+                                          transforms.ToTensor(),
+                                          transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+                                          ])
+    self.path = os.path.join(root, 'images') # image path
+    csvdata = self.loadCSV(os.path.join(root, mode + '.csv')) # csv path
+    self.data = []
+    self.img2label = {}
+    for i, (k,v) in enumerate(csvdata.items()):
+        self.data.append(v)
+        self.image2label[k] = i + self.startidx
+    self.cls_num = len(self.data)
+    
+    self.create_batch(self.batchsz)
