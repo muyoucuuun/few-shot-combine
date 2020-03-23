@@ -48,3 +48,6 @@ set episode
     self.cls_num = len(self.data)
     
     self.create_batch(self.batchsz)
+    
+  def loadCSV(self, csvf):
+  
