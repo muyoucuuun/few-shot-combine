@@ -50,4 +50,44 @@ set episode
     self.create_batch(self.batchsz)
     
   def loadCSV(self, csvf):
-  
+    """
+    return a dict saving the information of csv:{label:[file1, file2, ...]}
+    """
+    dictLabels = {}
+    with open(csvf) as csvfile:
+        csvreader = csv.reader(csvfile, delimiter=',')
+        next(csvreader, None)
+        for i,row in enumerate(csvreader):
+            filename = row[0]
+            label = row[1]
+            # append filename to current label
+            if label in dictLabels.keys():
+                dictLabels[label].append(filename)
+            else:
+                dictLabels[label] = [filename]
+      return dictLabels
+    
+    def create_batch(self,batchsz):
+      """
+      episode = batch , means how many sets want to retrain.
+      """
+      self.support_x_batch = []
+      self.query_x_batch = []
+      for b in range(batchsz): # for each batch
+          # 1. select n_way classes randomly
+          selected_cls = np.random.choice(self.cls_num, self.n_way, False) # no duplicate
+          np.random.shuffle(selected_cls)
+          support_x = []
+          query_x = []
+          for cls in selected_cls:
+              #2. select k_shot +k_query for each class
+              selected_imgs_idx = np.random.choice(len(self.data[cls]), self.k_shot + self.k_query, Fasle)
+              np.random.shuffle(selected_imgs_idx)
+              indexDtrain = np.array(selected_imgs_idx[:self.k_shot])  # idx for Dtrain
+              indexDtest = np.array(selected_imgs_idx[self.k_shot:] # idx for Dtest
+              support_x.append(
+                  np.array(self.data[cls])[indexDtrain].tolist()) # get all images filename for Dtrain
+              query_x.append(np.array(self.data[cls])[indexDtest].tolist())
+              
+          # shuffle spt set and qry set
+ 
